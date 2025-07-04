@@ -1,5 +1,9 @@
 # Fichiers à ignorer par Git
 
+# Scripts de déploiement et sauvegarde
+deploy_github.sh
+backup.sh
+
 # Logs
 *.log
 ansible.log
