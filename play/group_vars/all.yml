@@ -8,4 +8,4 @@ glpi_url: "https://github.com/glpi-project/glpi/releases/download/{{ glpi_versio
 # Base de données
 glpi_db_name: "glpi"
 glpi_db_user: "glpi"
-glpi_db_password: "glpi123"
+glpi_db_password: "votre_mot_de_passe_bdd"  # Remplacez par un mot de passe sécurisé
