@@ -1,0 +1,32 @@
+---
+# Installation de GLPI
+- name: Installation de GLPI
+  hosts: glpi_servers
+  become: yes
+  
+  pre_tasks:
+    - name: Mise à jour du système
+      apt:
+        update_cache: yes
+  
+  roles:
+    - role: system_preparation
+    - role: mysql
+    - role: apache
+    - role: php
+    - role: glpi
+  
+  post_tasks:
+    - name: Vérification GLPI
+      uri:
+        url: "http://{{ ansible_host }}/glpi"
+        method: GET
+        status_code: 200
+      delegate_to: localhost
+    
+    - name: Installation terminée
+      debug:
+        msg:
+          - "✅ GLPI installé avec succès !"
+          - "URL : http://{{ ansible_host }}/glpi"
+          - "Admin : admin/admin"

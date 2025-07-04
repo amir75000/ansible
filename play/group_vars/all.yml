@@ -1,0 +1,11 @@
+---
+# Variables pour GLPI
+
+# Version GLPI
+glpi_version: "10.0.10"
+glpi_url: "https://github.com/glpi-project/glpi/releases/download/{{ glpi_version }}/glpi-{{ glpi_version }}.tgz"
+
+# Base de données
+glpi_db_name: "glpi"
+glpi_db_user: "glpi"
+glpi_db_password: "glpi123"

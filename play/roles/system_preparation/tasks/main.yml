@@ -1,0 +1,21 @@
+---
+# Installation des paquets de base
+- name: Installation des paquets système
+  apt:
+    name:
+      - curl
+      - wget
+      - unzip
+    state: present
+
+- name: Création des répertoires
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop:
+    - /var/www
+    - /var/www/html
+    - /tmp/glpi_install

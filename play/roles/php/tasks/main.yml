@@ -1,0 +1,19 @@
+---
+# Installation de PHP
+- name: Installation de PHP
+  apt:
+    name:
+      - php
+      - php-mysql
+      - php-curl
+      - php-gd
+      - php-xml
+      - php-mbstring
+      - php-zip
+      - libapache2-mod-php
+    state: present
+
+- name: Redémarrage d'Apache après PHP
+  service:
+    name: apache2
+    state: restarted

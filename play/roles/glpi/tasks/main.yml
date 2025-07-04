@@ -1,0 +1,46 @@
+---
+# Installation de GLPI
+- name: Création du répertoire de téléchargement
+  file:
+    path: /tmp/glpi_install
+    state: directory
+    mode: '0755'
+
+- name: Téléchargement de GLPI
+  get_url:
+    url: "{{ glpi_url }}"
+    dest: /tmp/glpi_install/glpi.tgz
+
+- name: Extraction de GLPI
+  unarchive:
+    src: /tmp/glpi_install/glpi.tgz
+    dest: /var/www/html/
+    remote_src: yes
+    owner: www-data
+    group: www-data
+
+- name: Permissions GLPI
+  file:
+    path: /var/www/html/glpi
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes
+
+- name: Installation de GLPI via CLI
+  command: >
+    php /var/www/html/glpi/bin/console glpi:database:install
+    --config-dir="/var/www/html/glpi/config"
+    --no-interaction
+    --force
+    --db-host=localhost
+    --db-name={{ glpi_db_name }}
+    --db-user={{ glpi_db_user }}
+    --db-password={{ glpi_db_password }}
+  args:
+    creates: "/var/www/html/glpi/config/config_db.php"
+
+- name: Redémarrage d'Apache
+  service:
+    name: apache2
+    state: restarted

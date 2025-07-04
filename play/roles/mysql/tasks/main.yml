@@ -1,0 +1,27 @@
+---
+# Installation de MariaDB
+- name: Installation de MariaDB
+  apt:
+    name:
+      - mariadb-server
+      - mariadb-client
+      - python3-pymysql
+    state: present
+
+- name: Démarrage de MariaDB
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Création de la base de données GLPI
+  mysql_db:
+    name: "{{ glpi_db_name }}"
+    state: present
+
+- name: Création de l'utilisateur GLPI
+  mysql_user:
+    name: "{{ glpi_db_user }}"
+    password: "{{ glpi_db_password }}"
+    priv: "{{ glpi_db_name }}.*:ALL"
+    state: present

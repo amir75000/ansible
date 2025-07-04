@@ -1,0 +1,28 @@
+# Fichiers à ignorer par Git
+
+# Logs
+*.log
+ansible.log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.ansible/
+
+# Environnements virtuels
+venv/
+env/
+.env
+
+# Fichiers de sauvegarde
+*~
+*.swp
+*.swo
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration personnels (décommentez si besoin)
+# inv/hosts.yml
+# play/group_vars/all.yml

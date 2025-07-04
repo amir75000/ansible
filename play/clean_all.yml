@@ -1,0 +1,155 @@
+---
+# Nettoyage complet de GLPI
+- name: Nettoyage complet GLPI
+  hosts: glpi_servers
+  become: yes
+  
+  tasks:
+    - name: 🛑 Arrêt des services
+      service:
+        name: "{{ item }}"
+        state: stopped
+      loop:
+        - apache2
+        - mariadb
+      ignore_errors: yes
+    
+    - name: 🗑️ Suppression des fichiers GLPI
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /var/www/html/glpi
+        - /tmp/glpi_install
+        - /etc/apache2/sites-available/glpi.conf
+        - /etc/apache2/sites-enabled/glpi.conf
+    
+    - name: 🗑️ Suppression des fichiers temporaires
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/glpi*
+        - /var/tmp/glpi*
+        - /tmp/ansible*
+      ignore_errors: yes
+    
+    - name: 🗑️ Nettoyage des caches Apache
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /var/cache/apache2
+        - /var/lib/apache2/site
+      ignore_errors: yes
+    
+    - name: 🗑️ Nettoyage des logs GLPI
+      shell: |
+        find /var/log -name "*glpi*" -type f -delete
+        find /var/log -name "*apache*" -type f -exec truncate -s 0 {} \;
+        find /var/log -name "*mysql*" -type f -exec truncate -s 0 {} \;
+        find /var/log -name "*mariadb*" -type f -exec truncate -s 0 {} \;
+      ignore_errors: yes
+    
+    - name: 🗑️ Suppression base de données GLPI
+      mysql_db:
+        name: glpi
+        state: absent
+      ignore_errors: yes
+    
+    - name: 🗑️ Suppression utilisateur BDD GLPI
+      mysql_user:
+        name: glpi
+        state: absent
+      ignore_errors: yes
+    
+    - name: 🗑️ Nettoyage complet de la base de données
+      shell: |
+        mysql -e "DROP DATABASE IF EXISTS glpi;"
+        mysql -e "DROP USER IF EXISTS 'glpi'@'localhost';"
+        mysql -e "FLUSH PRIVILEGES;"
+      ignore_errors: yes
+    
+    - name: 🗑️ Suppression des configurations PHP personnalisées
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/php/*/apache2/conf.d/90-glpi.ini
+        - /etc/php/*/cli/conf.d/90-glpi.ini
+      ignore_errors: yes
+    
+    - name: 🗑️ Nettoyage des sessions PHP
+      shell: |
+        find /var/lib/php/sessions -name "sess_*" -type f -delete
+        find /tmp -name "sess_*" -type f -delete
+      ignore_errors: yes
+    
+    - name: 🗑️ Nettoyage du cache APT
+      apt:
+        autoclean: yes
+        autoremove: yes
+      ignore_errors: yes
+    
+    - name: 🗑️ Désactivation du site par défaut Apache
+      command: a2dissite 000-default
+      ignore_errors: yes
+    
+    - name: 🗑️ Désactivation du site GLPI
+      command: a2dissite glpi
+      ignore_errors: yes
+    
+    - name: 🔄 Rechargement de la configuration Apache
+      command: systemctl reload apache2
+      ignore_errors: yes
+    
+    - name: 🔄 Redémarrage des services
+      service:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - mariadb
+        - apache2
+      ignore_errors: yes
+    
+    - name: 🧹 Nettoyage des permissions
+      file:
+        path: /var/www/html
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        state: directory
+    
+    - name: 🧹 Création du fichier index par défaut
+      copy:
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Serveur prêt</title>
+              <style>
+                  body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+                  .message { background: #f0f0f0; padding: 20px; border-radius: 10px; display: inline-block; }
+              </style>
+          </head>
+          <body>
+              <div class="message">
+                  <h1>🚀 Serveur prêt pour GLPI</h1>
+                  <p>Le serveur a été nettoyé et est prêt pour une nouvelle installation.</p>
+                  <p>Lancez <code>./launch.sh</code> pour installer GLPI.</p>
+              </div>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+    
+    - name: ✅ Nettoyage terminé
+      debug:
+        msg: 
+          - "🎉 Nettoyage complet terminé avec succès !"
+          - "🔧 Tous les fichiers GLPI ont été supprimés"
+          - "🗃️ Base de données nettoyée"
+          - "🧹 Caches et logs nettoyés"
+          - "📝 Relancez : ./launch.sh pour réinstaller"
